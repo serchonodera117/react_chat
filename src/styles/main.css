@@ -1,0 +1,11 @@
+:root{
+    --submit-buttons: rgba(0,0,0,0.6);
+}
+
+*{
+    margin:0;
+}
+
+.hiddenCheckbox{
+    display:none;
+}
