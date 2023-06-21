@@ -1,6 +1,6 @@
 :root{
     --back-login-color: rgba(14, 11, 11, 0.979);
-    --login-card: rgba(26, 24, 24, 0.979);
+    --login-card: rgba(26, 24, 24, 0.685);
     --border-title: rgb(51, 19, 124);
     --color-btn: rgb(33, 7, 48);
     --border-btn: rgb(71, 49, 83);
@@ -17,21 +17,32 @@
     text-align: left;
     margin-bottom: 2rem;;
 }
-.login-container, .register-container{
-    border-radius: 5px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    display: table;
+.cards-container{
+    width:35%;
     margin-left: auto;
     margin-right: auto;
-    width:  35%;
-    height: 11rem;
     margin-top: 10%;
+}
+.login-container, .register-container{
+    padding-top: 2rem;
+    border-radius: 5px;
+    padding-bottom: 2rem;
+    width:  100%;
+    z-index: 1;
+    position: relative;
+    display: block;
+    height: 26rem;
+    transition: 0.5s ease-in-out;
+    backdrop-filter: blur(10px);
     background-color: var(--login-card);
     box-shadow: 0px 0px 5px 2px rgba(152, 199, 113, 0.6);
 }
 .register-container{
-    margin-top: -15rem;
+    display: block;
+    position: relative;
+    margin-top: -31rem;
+    margin-left: 1rem;
+    z-index: 0;
 }
 .login{
     background-color: var(--back-login-color);
@@ -111,12 +122,64 @@
     .floating-btn{
     background-color: rgb(82, 35, 109);
     }
+    
+    .register-container{
+        animation: change-card-login 0.5s;
+        z-index: 1;
+    }
+    .login-container{
+        z-index: 0;
+    }
 }
 
+.login.login:has(#input-checkbox-changelogin:not(:checked)){
+    
+    .register-container{
+        z-index: 0;
+    }
+    .login-container{
+        z-index: 1;
+        animation: change-card-login 0.5s;
+    }
+}
 
+.img-profile-pic{
+    object-fit: cover;
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    display: table;
+    margin-top: -5rem;
+}
+.btn-chose-img{
+    position: relative;
+    margin-top: -30px;
+    margin-left: 8rem;
+    width: 3.5rem;
+    border: solid 1px white;
+    height: 3.5rem;
+    background-color: var(--border-title);
+    padding: 5px;
+    text-align: center;
+    border-radius: 50px;
+    transition: 0.3s ease-in-out;
+}.btn-chose-img:hover{
+    scale: 1.1;
+    background-color: rgba(157, 27, 168, 0.979);
+    transform: translateY(-5px);
+}
 
 /*animations*/
 @keyframes chose-login{
     0%{transform: rotate(0deg) translateY(0px) translateX(0px); }
     50%{transform: rotate(45deg) translateY(-15px) translateX(10px); }
+}
+
+@keyframes change-card-login{
+    50%{
+        transform: rotate(45deg) translateY(-10rem) translateX(10rem);
+    }
+ 
 }
