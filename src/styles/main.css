@@ -47,8 +47,8 @@
     float: right;
     margin-right: 15px;
     border-radius: 5px;
-    height: 2rem;
-    width: 2rem;
+    height: 1.5rem;
+    width: 1.5rem;
 }
 .icon-toast{
     object-fit: cover;
@@ -59,4 +59,9 @@
 .toast-content{
     margin: 1rem;
     text-align: justify;
+}
+
+.toast-body:has(#toast-check:checked) {
+    opacity: 0;
+      transform: translateX(-3rem)  
 }

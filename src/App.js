@@ -42,12 +42,20 @@ function App() {
     setDateToast(formatDate)
     setTsToast(true)
   }
-  function closeToast(){setTsToast(false);}
-
+  function closeToast(){
+    setTimeout(()=>{
+      setTsToast(false);
+      let a = document.getElementById("toast-check");
+      a.checked = false;
+    },500)
+  }
+  function beginSession(){
+    setisLogged(true)
+    localStorage.setItem("isLogged", true);
+  }
   return (
     <div className="App">
-      {(isLogged)? <Chat db={db} ></Chat>: <Login db={db} onToast={deployToast}></Login>}
-
+      {(isLogged)? <Chat db={db} ></Chat>: <Login db={db} onLogin={beginSession} onToast={deployToast}></Login>}
 
       {(isToast)?
       <div className="toast-body">
@@ -55,7 +63,8 @@ function App() {
           <img src={logo} className="icon-toast"></img>
           <small className="toast-title">React Chat</small>
           <small>{dateToast}</small>
-          <button className="close-toast" onClick={closeToast}>X</button>
+          <label htmlFor="toast-check" className="close-toast">X</label>
+          <input  id="toast-check"type="checkbox" onChange={closeToast} className="hiddenItem"></input>
         </div>
         <hr></hr>
         <div className="toast-content">

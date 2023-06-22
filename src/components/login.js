@@ -1,9 +1,9 @@
 import React from 'react';
 import Axios from 'axios';
 import {useState, useEffect} from 'react';
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 
-
+import { signInWithEmailAndPassword } from "firebase/auth";
 import defaultUserImage from '../images/default_userimg.png'
 import '../styles/main.css';
 import '../styles/login.css';
@@ -13,9 +13,10 @@ import 'firebase/firestore';
 import 'firebase/auth';
 
 
-function Login({db, onToast}) {
+function Login({db, onToast, onLogin}) {
     const [addUserData, setUserData] = useState({username:'', password:'', image:''})
     const [photoName, setPhotoName] = useState("")
+    const [loginData, setLoginData] = useState({username:'', password:''})
     const dataBase = db;
 
     useEffect(() => {
@@ -57,7 +58,40 @@ function Login({db, onToast}) {
             setUserData({username:'', password:'', image:defaultUserImage})
             
         }catch(error){
-            console.error("Error al insertar usuario : ", error)
+            activateToast("Error al insertar usuario : ", error)
+        }
+    }
+
+    function userNameLogin(e){
+        let valueInput = e.target.value
+        setLoginData(item=>({...item, username:valueInput}))
+    }
+
+    function passwordLogin(e){
+        let valueInput = e.target.value
+        setLoginData(item=>({...item, password:valueInput}))
+    }
+
+    async  function Logon(e){
+        let db = getFirestore();
+        e.preventDefault();
+        try {
+            const userCollections = collection(db,"users");
+            const myQuery = query(userCollections, where("username", "==", loginData.username), where("password", "==", loginData.password))
+            const request = await getDocs(myQuery)
+            let userData;
+            request.forEach((doc) => {
+                userData = doc.data();
+            })
+            localStorage.setItem("user", userData);
+            if(userData!=null){
+                onLogin()
+                activateToast(`${userData.username} Bienvenido :3`)
+            }else{
+                activateToast("Usuario o contraseña invalidos U ,u")
+            }
+        } catch (error) {
+            activateToast("Error al insertar usuario : ", error)
         }
     }
     return(
@@ -72,17 +106,17 @@ function Login({db, onToast}) {
             <div className="cards-container">
                 <div className="login-container">
                     <h1 className="title-login">LOGIN</h1>
-                    <form className="login-form">
+                    <form className="login-form" onSubmit={Logon}>
                         <div className="form-row">
                             <label htmlFor="input-username">Username</label><br></br>
-                            <input className='text-box-login' id="input-username" type="text" ></input>
+                            <input className='text-box-login' onChange={userNameLogin} id="input-username" type="text" value={loginData.username}></input>
                         </div>
                         <br></br>
                         <br></br>
                         <br></br>
                         <div className="form-row">
                             <label htmlFor="input-password">Password</label><br></br>
-                            <input className='text-box-login' id="input-password" type="passwprd" ></input>
+                            <input className='text-box-login' onChange={passwordLogin} id="input-password" type="passwprd" value={loginData.password} ></input>
                         </div>
                         <br></br>
                         <br></br>
