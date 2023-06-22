@@ -23,7 +23,9 @@ function Login({db, onToast}) {
         setPhotoName("Profile_Pic(.png/.jpg/.gif/.webp)")
     },[])
 
-    function activateToast(message){onToast(message);}
+    function activateToast(message){
+        onToast(message.toString());
+    }
     function photoSelected(e){
         let reader = new FileReader();
         reader.readAsDataURL(e.target.files[0]);
@@ -50,6 +52,7 @@ function Login({db, onToast}) {
             const docRef =  await addDoc(collection(db,"users"), addUserData);
             let checkbox = document.getElementById("input-checkbox-changelogin")
             checkbox.checked = false;
+            
             activateToast(`${addUserData.username} se ha registrado con éxito`)
             setUserData({username:'', password:'', image:defaultUserImage})
             

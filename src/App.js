@@ -22,7 +22,7 @@ const app = initializeApp(firebaseConfig);
 const database =  getDatabase(app);
 
 function App() {
-  const [isToast, setTsToast] = useState()
+  const [isToast, setTsToast] = useState(false)
   const [db] = useState(database);
   const [isLogged, setisLogged] = useState(false)
   const [dateToast, setDateToast] = useState("")
@@ -34,7 +34,7 @@ function App() {
     setTsToast(false)
   },[])
 
-  function deployToast(title, message){
+  function deployToast(message){
     let date = new Date()
     let formatDate = `${date.getDate()}/${date.getMonth()}/${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`; 
     
@@ -50,18 +50,19 @@ function App() {
 
 
       {(isToast)?
-       <div className="toast" role="alert" aria-live="assertive" aria-atomic="true">
-       <div className="toast-header">
-           <img src={logo} className="rounded me-2 img-toast" alt="..."></img>
-           <strong className="me-auto">Message: </strong>
-           <small>{dateToast}</small>
-           <button type="button" className="btn-close" onClick={closeToast}></button>
-       </div>
-       <div className="toast-body">
-         {messageToast}
-       </div>
-       </div>
-      : <div></div>}
+      <div className="toast-body">
+        <div className="toast-head">
+          <img src={logo} className="icon-toast"></img>
+          <small className="toast-title">React Chat</small>
+          <small>{dateToast}</small>
+          <button className="close-toast" onClick={closeToast}>X</button>
+        </div>
+        <hr></hr>
+        <div className="toast-content">
+          {messageToast}
+        </div>
+      </div>
+        : <div></div>}
     </div>
   );
 }

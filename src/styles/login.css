@@ -171,6 +171,8 @@
     transform: translateY(-5px);
 }
 
+
+
 /*animations*/
 @keyframes chose-login{
     0%{transform: rotate(0deg) translateY(0px) translateX(0px); }
