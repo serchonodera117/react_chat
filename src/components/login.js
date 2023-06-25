@@ -14,13 +14,13 @@ import 'firebase/auth';
 
 
 function Login({db, onToast, onLogin}) {
-    const [addUserData, setUserData] = useState({username:'', password:'', image:''})
+    const [addUserData, setUserData] = useState({username:'', password:'', image:'', contacts:[]})
     const [photoName, setPhotoName] = useState("")
     const [loginData, setLoginData] = useState({username:'', password:''})
     const dataBase = db;
 
     useEffect(() => {
-        setUserData({username:'', password:'', image:defaultUserImage})
+        setUserData({username:'', password:'', image:defaultUserImage, contacts:[]})
         setPhotoName("Profile_Pic(.png/.jpg/.gif/.webp)")
     },[])
 
@@ -55,7 +55,7 @@ function Login({db, onToast, onLogin}) {
             checkbox.checked = false;
             
             activateToast(`${addUserData.username} se ha registrado con éxito`)
-            setUserData({username:'', password:'', image:defaultUserImage})
+            setUserData({username:'', password:'', image:defaultUserImage, contacts:[]})
             
         }catch(error){
             activateToast("Error al insertar usuario : ", error)
@@ -82,8 +82,9 @@ function Login({db, onToast, onLogin}) {
             let userData;
             request.forEach((doc) => {
                 userData = doc.data();
+                userData.id = doc.id
             })
-            localStorage.setItem("user", userData);
+            localStorage.setItem("user", JSON.stringify(userData));
             if(userData!=null){
                 onLogin()
                 activateToast(`${userData.username} Bienvenido :3`)

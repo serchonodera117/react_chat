@@ -14,6 +14,7 @@ import 'firebase/auth';
 
 const firebaseConfig = {
   //your project credentials
+
 };
 
 // Initialize Firebase
@@ -28,8 +29,9 @@ function App() {
   const [messageToast, setMessageToast] = useState("")
 
   useEffect(()=>{
-    let session = localStorage.getItem('isLogged');
-    setisLogged(session != null? session : false);
+    let session = JSON.parse(localStorage.getItem('isLogged'));
+    let savedSession = (session==null) ? false : session;
+    setisLogged(savedSession);
     setTsToast(false)
   },[])
 
@@ -52,9 +54,15 @@ function App() {
     setisLogged(true)
     localStorage.setItem("isLogged", true);
   }
+  function closeSession(){
+    setisLogged(false)
+    localStorage.setItem("isLogged", false);
+  }
   return (
     <div className="App">
-      {(isLogged)? <Chat db={db} ></Chat>: <Login db={db} onLogin={beginSession} onToast={deployToast}></Login>}
+      {(isLogged)? <Chat db={db} onSesionClose={closeSession} ></Chat> : 
+        <Login db={db} onLogin={beginSession} onToast={deployToast}></Login>
+      }
 
       {(isToast)?
       <div className="toast-body">
