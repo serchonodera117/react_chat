@@ -1,5 +1,4 @@
 import React from 'react';
-import Axios from 'axios';
 import {useState, useEffect} from 'react';
 import { getFirestore, collection, addDoc, query, where, getDocs } from "firebase/firestore";
 
@@ -14,13 +13,13 @@ import 'firebase/auth';
 
 
 function Login({db, onToast, onLogin}) {
-    const [addUserData, setUserData] = useState({username:'', password:'', image:'', contacts:[]})
+    const [addUserData, setUserData] = useState({username:'', password:'', image:'', contacts:[], friend_requests:[]})
     const [photoName, setPhotoName] = useState("")
     const [loginData, setLoginData] = useState({username:'', password:''})
     const dataBase = db;
 
     useEffect(() => {
-        setUserData({username:'', password:'', image:defaultUserImage, contacts:[]})
+        setUserData({username:'', password:'', image:defaultUserImage, contacts:[], friend_requests:[]})
         setPhotoName("Profile_Pic(.png/.jpg/.gif/.webp)")
     },[])
 
@@ -55,7 +54,7 @@ function Login({db, onToast, onLogin}) {
             checkbox.checked = false;
             
             activateToast(`${addUserData.username} se ha registrado con éxito`)
-            setUserData({username:'', password:'', image:defaultUserImage, contacts:[]})
+            setUserData({username:'', password:'', image:defaultUserImage, contacts:[], friend_requests:[]})
             
         }catch(error){
             activateToast("Error al insertar usuario : ", error)

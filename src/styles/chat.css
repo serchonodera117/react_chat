@@ -3,12 +3,45 @@
     --col-color: rgba(22, 22, 22, 0.979);
     --input-color: rgba(17, 16, 16, 0.979);
     --placeholder-color: rgba(70, 58, 58, 0.979);
+    --modal-color: rgba(68, 68, 68, 0.877);
+    --mod-header: rgba(26, 25, 25, 0.9);
 }
 
 .btn-close-session{
+    background-color: var(--bg-color);
+    border-color: 1px solid var(--placeholder-color);
+    border-radius: 15px;
     position:absolute;
+    width: 30px;
+    height: 30px;
     z-index: 1;
+    overflow: hidden;
+    transition: 0.3s ease-in-out;
+    word-break:keep-all;
+    text-align: left;
+    margin-top: 15px;
+    left: 15px;
 }
+.btn-close-session:hover{
+    width: 150px;
+    background-color: rgba(43, 40, 40, 0.979);
+    box-shadow: 0px 0px 6px 1px rgba(146, 120, 120, 0.979);
+}
+.btn-close-session svg{
+    margin: 5px 5px 5px 0px;
+}
+.btn-close-session span{
+    float: right;
+    position: relative;
+    margin-top: 5px;
+    transition: 0.7s ease-in-out;
+    opacity: 0;
+}
+.btn-close-session:hover span{
+    opacity: 1;
+    transform: translateX(-15px);
+}
+
 .chat-component{
     width: 100%;
     height: 100%;
@@ -60,6 +93,7 @@
 .search-contact{
     margin-top: 5%;
     height: 30px;
+    width: 65%;
     border-radius: 10px;
     padding: 3px;
     padding-left: 5px;
@@ -78,3 +112,148 @@
     margin-top: 6%;
     margin-left: -30px;
 }
+
+.search-new-friend{
+    width: 20%;
+    margin-left: 5px;
+    height: 5px;
+    margin-top: 6%;
+    transition: 0.3s;
+}
+.search-new-friend svg{
+    transition: 0.3s;
+}
+.search-new-friend:hover svg{
+    color: rgb(190, 236, 82);
+    scale: 1.5;
+}
+
+
+.modal-container{
+    position:absolute;
+    overflow: hidden;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+    left: 25vw;
+    right: 25vw;
+    height: 70vh;
+    width: 50vw;
+    opacity: 0;
+    z-index: -1;
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+    transition: 0.3s ease-in;
+    transform: rotateY(90deg) ;
+    background-color: var(--modal-color);
+}
+.modal-header{
+    width: 100%;
+    display:inline-table;
+    height:7vh;
+    background-color: var(--mod-header);
+}
+.btn-close-modal{
+    float: right;
+    border: 1px solid white;
+    padding:3px;
+    height: 25px;
+    margin-top: -25px;
+    margin-right: 15px;
+    width: 25px;
+    border-radius:50px;
+}
+.img-modal{
+    height: 30px;
+    width: 30px;
+    float: left;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+.modal-body{
+    height: 63vh;
+    height: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.btn-search, .btn-search-all{
+    background-color: var(--bg-color);
+    border-color: 1px solid var(--placeholder-color);
+    border-radius: 30px;
+    margin-right: 5px;
+    margin-left: 5px;
+    transition: 0.3s;
+}
+.btn-search:hover, .btn-search-all:hover{
+    background-color: rgba(102, 87, 87, 0.8);
+}
+.modal-list{
+    max-height: 51vh;
+    overflow-y: scroll;
+}
+.web-card-body{
+    display: table;
+    text-align: left;
+    width: 98%;
+    position: relative;
+    padding: 5px;
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+}
+.web-username{
+    position: relative;
+    display: block;
+    margin-left: 10vh;
+    margin-top: 10px;
+}
+.img-web-search{
+    width: 50px;
+    height: 50px;
+    float: left;
+    border-radius: 50px;
+    object-fit: cover;
+}
+
+.btn-send-request{
+    position: relative;
+    float: right;
+    margin-top: -20px;
+    margin-right:2vw;
+    border-radius: 50px;
+    transition: 0.2s ease-out;
+    background-color: var(--bg-color);
+}
+.btn-send-request:hover{
+    scale: 1.05;
+    background-color: var(--placeholder-color);
+}
+#search-modal-activator:checked ~ .modal-container{
+    z-index: 10;
+    opacity: 1;
+    transform: translateY(10vh);
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+    border-radius: 15px;
+
+  }
+/*Scroll*/
+  /* Track */
+  ::-webkit-scrollbar-track {
+    border-radius: 15px;
+    background: #cfc1c1;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #1d1b1b;
+    border-radius: 15px;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #312e2e;
+  }

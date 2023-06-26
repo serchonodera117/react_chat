@@ -1,6 +1,5 @@
 import logo from './logo.svg';
 import './App.css';
-import Axios from 'axios';
 import {useState, useEffect} from 'react';
 import './styles/main.css';
 import Login from './components/login';
