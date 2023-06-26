@@ -8,7 +8,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
 import { getFirestore, collection, addDoc, query, where, limit,
-     getDocs } from "firebase/firestore";
+     getDocs,getDoc , doc, runTransaction, onSnapshot} from "firebase/firestore";
 import select from "firebase/firestore"
 
 
@@ -18,13 +18,32 @@ function Chat({db, onSesionClose}){
     const [searchWebUsers, setSearchWebUsers] = useState("")
     const [webListUsers, setWebListUsers] = useState([])
 
+//---------------------------------------------Listening
+listeningRequests()
+//-----------------------------------------end Listening
+
+
     useEffect(()=>{
         let localUserData = JSON.parse(localStorage.getItem('user'))
         if(userData!==null){
-          setUserData(localUserData)
+          getUserData(localUserData.id)
         }
     },[]);
+   async function getUserData(id){
+        let myDB = getFirestore();
+        let myDoc = doc(myDB, "users", id)
+        try{
+            let querySnapshot = await getDoc(myDoc) 
+            if(querySnapshot.exists()){
+                const data = querySnapshot.data()
+                data.id = querySnapshot.id
+                setUserData(data)
+            }
 
+        }   catch(error){
+            console.error("no se pudieron traer los datos", error);
+        }  
+    }
     function closeSession(){
         localStorage.removeItem('user')
         onSesionClose()
@@ -101,6 +120,56 @@ function Chat({db, onSesionClose}){
             console.error("error al buscar usuarios:", error)
         }
     }
+
+    async function sendRequest(id_Friend){
+        let idFriend = id_Friend;
+        let myDB = getFirestore()
+        let btn = document.getElementById(idFriend);
+        const userRef = doc(myDB, 'users', idFriend);
+
+        let myUserProfile = {
+            id: userData.id,
+            username: userData.username, 
+            image: userData.image 
+        }
+
+        try{
+            await runTransaction(myDB, async(transaction) =>{
+                const userSnapshot = await transaction.get(userRef);
+                const friendUserData = userSnapshot.data()
+
+                friendUserData.friend_requests.push(myUserProfile)
+                transaction.update(userRef, {friend_requests: friendUserData.friend_requests})
+            })
+
+            btn.innerHTML=`
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-gear" viewBox="0 0 16 16">
+                <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Zm9.886-3.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382l.045-.148ZM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
+              </svg>
+            `
+            btn.disabled = true
+        }catch(error){
+            console.error("error al enviar solicitud: " + error)
+        }
+    }
+
+     function listeningRequests(){
+        if(userData.id && userData.friend_requests){
+            let myID = userData.id;
+            let myDB = getFirestore()
+            let myCollection = doc(myDB, "users", myID);
+            let myQuery = query(myCollection)
+
+            const unsuscribe = onSnapshot(myCollection,(snapshot)=>{
+                if(userData.friend_requests){
+                        const userData = snapshot.data()
+                        let friend_requests = userData.friend_requests;
+                        setUserData(obj=>({...obj, friend_requests:friend_requests}))
+                    }
+            })
+            return unsuscribe;
+        }
+    }
     return(
         <div className="chat-component">
             <button className='btn-close-session' onClick={closeSession}>
@@ -133,12 +202,14 @@ function Chat({db, onSesionClose}){
                                 <div className='web-card-body' key={index}>
                                     <img className='img-web-search' src={user.image}></img>
                                     <label className='web-username'>{user.username}</label>
-                                    <button className='btn-send-request'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-add" viewBox="0 0 16 16">
-                                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
-                                        <path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/>
-                                    </svg>
-                                    </button>
+                                    {(userData.id !== user.id) ?
+                                    <button id={user.id}className='btn-send-request' onClick={()=>(sendRequest(user.id))}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-add" viewBox="0 0 16 16">
+                                            <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                                            <path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/>
+                                        </svg>
+                                    </button>:<div></div>
+                                    }
                                 </div>
                             ))
                         }
@@ -163,6 +234,43 @@ function Chat({db, onSesionClose}){
                     </div>
                     <hr></hr>
                     <div className="body-contacts">
+                        <small className="notification-request">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-add" viewBox="0 0 16 16">
+                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
+                            </svg>
+                            {(userData.friend_requests && userData.friend_requests.length > 0) ? userData.friend_requests.length: <></>}
+                        </small>
+                        <details className="request-container">
+                            <summary>Friend requests</summary><br></br>
+                            {
+                                (userData.friend_requests)?
+                                userData.friend_requests.map((request, index) =>(
+                                    <div className="element-list-contact f-request" key={index}>
+                                        <img className='img-contact-list' src={request.image} alt={request.userame +"imb"}></img>
+                                        <small className="element-list-request">{request.username}</small>
+                                        <div className="btn-container"> 
+                                            <button className="btn-request-list accept">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-add" viewBox="0 0 16 16">
+                                            <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                                <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
+                                            </svg>
+                                            </button>
+                                            <button className="btn-request-list reject">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-x" viewBox="0 0 16 16">
+                                                    <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
+                                                    <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708Z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                                :
+                                <div></div>
+                            }
+                        </details>
+                        <br></br>
+                        <hr></hr>
                         body
                         userData.contacts.forEach(item=[
                             list
