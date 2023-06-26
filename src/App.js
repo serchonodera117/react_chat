@@ -13,7 +13,7 @@ import 'firebase/auth';
 
 const firebaseConfig = {
   //your project credentials
-
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
