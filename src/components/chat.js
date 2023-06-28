@@ -11,6 +11,8 @@ import { getFirestore, collection, addDoc, query, where, limit,
      getDocs,getDoc , doc, runTransaction, onSnapshot} from "firebase/firestore";
 import select from "firebase/firestore"
 
+import clock from "../images/clock.gif";
+import bgIcon from "../images/background_icon.png"
 
 function Chat({db, onSesionClose}){
     const dataBase = db;
@@ -20,6 +22,7 @@ function Chat({db, onSesionClose}){
 
 //---------------------------------------------Listening
 listeningRequests()
+listeningContacts()
 //-----------------------------------------end Listening
 
 
@@ -153,6 +156,79 @@ listeningRequests()
         }
     }
 
+
+    async function deleteFriendRequest(id_user_request, accepted, deleted, clock_id){
+        let btn_accept = document.getElementById(accepted)
+        let btn_delete = document.getElementById(deleted)
+        let clock_icon = document.getElementById(clock_id)
+        btn_accept.disabled = true;
+        btn_delete.disabled = true;
+        btn_accept.style.backgroundColor = "#767a77"
+        btn_delete.style.backgroundColor = "#767a77"
+        clock_icon.style.display = "block"
+
+        let myDB = getFirestore();
+        let userRef = doc(myDB, "users", userData.id)
+        try{
+            await runTransaction(myDB, async(transaction)=>{
+                const userSnapshot = await transaction.get(userRef);
+                let myData = userSnapshot.data()
+                let arrayRequests = myData.friend_requests
+                let index = arrayRequests.findIndex(item => item.id == id_user_request)
+                arrayRequests.splice(index,1)
+                transaction.update(userRef, {friend_requests: arrayRequests})
+            })
+        }catch(error){
+            console.error("error al enviar solicitud: " + error)
+        }
+    }
+
+    async function acceptRequest(infoUser){
+        const obj = {...infoUser}
+        deleteFriendRequest(obj.id_user_request, obj.accepted, obj.deleted, obj.clock_id)
+
+
+        let myDB = getFirestore();
+        let myUserRef = doc(myDB, "users", userData.id)
+        let friendRef = doc(myDB, "users", obj.id_user_request)
+
+        try{
+            await runTransaction(myDB, async(transaction)=>{
+                let friendInfo = {
+                    chat_id: "chat_id",
+                    id : obj.id_user_request,
+                    username: obj.request_username,
+                    image: obj.request_image,
+                    missing_messages: 0,
+                    last_messge: "",
+                    date_time_message: ""
+                }
+                const userSnapshot = await transaction.get(myUserRef);
+                let myData = userSnapshot.data()
+                myData.contacts.push(friendInfo)
+                transaction.update(myUserRef, {contacts: myData.contacts})
+            })
+            await runTransaction(myDB, async(transaction)=>{
+                let myInfo_for_friend = {
+                    chat_id: "chat_id",
+                    id : userData.id,
+                    username: userData.username,
+                    image: userData.image,
+                    missing_messages: 0,
+                    last_messge: "",
+                    date_time_message: ""
+                }
+                const userSnapshot = await transaction.get(friendRef);
+                let myData = userSnapshot.data()
+                myData.contacts.push(myInfo_for_friend)
+                transaction.update(friendRef, {contacts: myData.contacts})
+            })
+        }
+        catch(error){
+            console.error("error accepting request:", error)
+        }
+    }
+//------------------------------------------------listening dunctions 
      function listeningRequests(){
         if(userData.id && userData.friend_requests){
             let myID = userData.id;
@@ -162,10 +238,26 @@ listeningRequests()
 
             const unsuscribe = onSnapshot(myCollection,(snapshot)=>{
                 if(userData.friend_requests){
-                        const userData = snapshot.data()
-                        let friend_requests = userData.friend_requests;
+                        const theuserData = snapshot.data()
+                        let friend_requests = theuserData.friend_requests;
                         setUserData(obj=>({...obj, friend_requests:friend_requests}))
                     }
+            })
+            return unsuscribe;
+        }
+    }
+    function listeningContacts(){
+        if(userData.id && userData.contacts){
+            let myID = userData.id;
+            let myDB = getFirestore()
+            let myCollection = doc(myDB, "users", myID);
+            let myQuery = query(myCollection);
+
+            const unsuscribe = onSnapshot(myCollection, (snapshot) =>{
+                const theuserData = snapshot.data()
+                let contacts = theuserData.contacts;
+                setUserData(obj=>({...obj, contacts: contacts}))
+
             })
             return unsuscribe;
         }
@@ -234,29 +326,56 @@ listeningRequests()
                     </div>
                     <hr></hr>
                     <div className="body-contacts">
-                        <small className="notification-request">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-add" viewBox="0 0 16 16">
-                                <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                                <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
-                            </svg>
-                            {(userData.friend_requests && userData.friend_requests.length > 0) ? userData.friend_requests.length: <></>}
-                        </small>
+                        {
+                        (userData.friend_requests && 
+                            userData.friend_requests.length > 0) ? 
+                                <small className="notification-request">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-add" viewBox="0 0 16 16">
+                                        <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                        <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
+                                    </svg>
+                                    {userData.friend_requests.length}
+                                </small>
+                            : 
+                            <div></div>
+                            }
+                    
+                    {(userData.friend_requests && 
+                    userData.friend_requests.length > 0) ? 
                         <details className="request-container">
                             <summary>Friend requests</summary><br></br>
                             {
                                 (userData.friend_requests)?
                                 userData.friend_requests.map((request, index) =>(
-                                    <div className="element-list-contact f-request" key={index}>
+                                    <div className="element-list-contact f-request" key={request.id}>
                                         <img className='img-contact-list' src={request.image} alt={request.userame +"imb"}></img>
+                                        <img id={"clock_"+request.id} className='img-contact-list clock-request_list' src={clock} alt={request.userame +"imb"}></img>
+                                        
                                         <small className="element-list-request">{request.username}</small>
                                         <div className="btn-container"> 
-                                            <button className="btn-request-list accept">
+                                            <button id={"accept_"+request.id} className="btn-request-list accept"
+                                            
+                                            onClick={() =>(acceptRequest({
+                                                id_user_request: request.id, 
+                                                accepted:"accept_"+request.id, 
+                                                deleted:"delete_"+request.id, 
+                                                clock_id:"clock_"+request.id,
+                                                request_username: request.username,
+                                                request_image: request.image
+                                                }
+                                            ))}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-add" viewBox="0 0 16 16">
                                             <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                                                 <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
                                             </svg>
                                             </button>
-                                            <button className="btn-request-list reject">
+                                            <button id={"delete_"+request.id} className="btn-request-list reject" 
+                                            onClick={() =>(deleteFriendRequest(
+                                                request.id, 
+                                                "accept_"+request.id, 
+                                                "delete_"+request.id, 
+                                                "clock_"+request.id))
+                                                }>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill-x" viewBox="0 0 16 16">
                                                     <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-9 8c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4Z"/>
                                                     <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-.646-4.854.646.647.646-.647a.5.5 0 0 1 .708.708l-.647.646.647.646a.5.5 0 0 1-.708.708l-.646-.647-.646.647a.5.5 0 0 1-.708-.708l.647-.646-.647-.646a.5.5 0 0 1 .708-.708Z"/>
@@ -269,12 +388,26 @@ listeningRequests()
                                 <div></div>
                             }
                         </details>
+                        : 
+                        <div></div>
+                        }
                         <br></br>
                         <hr></hr>
-                        body
-                        userData.contacts.forEach(item=[
-                            list
-                        ])
+                        {
+                            (userData.contacts && userData.contacts.length > 0)?
+                                userData.contacts.map((contact, index)=>(
+                                    <div className="element-list-contact"  key={index}>
+                                        <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
+                                        <small className="element-list-username">{contact.username}</small>
+                                        <small className='last-date-contact'>{contact.date_time_message}</small>
+                                    </div>
+                                ))
+                                :<div>
+                                    <img className='backgroud-icon' src={bgIcon} ></img>
+                                    <br></br>
+                                    <p className='bg-message'>You dont have contacts</p>
+                                </div>
+                        }
                     </div>
                 </div>
                 <div className='chat'>
