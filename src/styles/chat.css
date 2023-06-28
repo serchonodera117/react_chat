@@ -84,6 +84,26 @@
     height: 6vw;
     display:flex;
 }
+.body-contacts{
+  max-height: 88%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.missing-messages{
+  display: table;
+  width: 15px;
+  margin-top: 2.5vh;
+  padding: 1px;
+  margin-left: -15px;
+  height: 15px;
+  border-radius:50px;
+  background-color: var(--notification);
+  transition: 0.2s ease-out;
+  opacity: 1
+}.missing-messages[data-content="0"]{
+  transform: translateY(-10px);
+  opacity: 0;
+}
 .user-img{
     object-fit: cover;
     width: 50px;
@@ -242,7 +262,7 @@
 
 /* width */
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 5px;
     border-radius: 15px;
 
   }
@@ -250,7 +270,7 @@
   /* Track */
   ::-webkit-scrollbar-track {
     border-radius: 15px;
-    background: #cfc1c1;
+    background: #6b6464;
   }
   
   /* Handle */
@@ -306,7 +326,7 @@
     padding-left: 1vw;
     padding-right: 1vw;
     cursor: pointer;
-    transition: 0.3s ease-in;
+    transition: 0.2s ease-in;
   }.element-list-contact:hover{
     background-color: rgb(58, 53, 53);
 

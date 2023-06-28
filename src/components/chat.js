@@ -14,7 +14,7 @@ import select from "firebase/firestore"
 import clock from "../images/clock.gif";
 import bgIcon from "../images/background_icon.png"
 
-function Chat({db, onSesionClose}){
+function Chat({db, onSesionClose, onToast}){
     const dataBase = db;
     const [userData, setUserData] = useState("")
     const [searchWebUsers, setSearchWebUsers] = useState("")
@@ -56,6 +56,9 @@ listeningContacts()
     function closeSession(){
         localStorage.removeItem('user')
         onSesionClose()
+    }
+    function writeMessage(message){
+        onToast(message)
     }
 
     function writeSearch(e){
@@ -128,7 +131,7 @@ listeningContacts()
         }
     }
 
-    async function sendRequest(id_Friend){
+    async function sendRequest(id_Friend, user){
         let idFriend = id_Friend;
         let myDB = getFirestore()
         let btn = document.getElementById(idFriend);
@@ -147,6 +150,7 @@ listeningContacts()
 
                 friendUserData.friend_requests.push(myUserProfile)
                 transaction.update(userRef, {friend_requests: friendUserData.friend_requests})
+                writeMessage(`Friend request to ${user} successfully sent`)
             })
 
             btn.innerHTML=`
@@ -156,7 +160,7 @@ listeningContacts()
             `
             btn.disabled = true
         }catch(error){
-            console.error("error al enviar solicitud: " + error)
+            writeMessage("error sending friend request: " + error)
         }
     }
 
@@ -189,7 +193,14 @@ listeningContacts()
 
     async function acceptRequest(infoUser){
         const obj = {...infoUser}
-        deleteFriendRequest(obj.id_user_request, obj.accepted, obj.deleted, obj.clock_id)
+        let btn_accept = document.getElementById(obj.accepted)
+        let btn_delete = document.getElementById(obj.deleted)
+        let clock_icon = document.getElementById(obj.clock_id)
+        btn_accept.disabled = true;
+        btn_delete.disabled = true;
+        btn_accept.style.backgroundColor = "#767a77"
+        btn_delete.style.backgroundColor = "#767a77"
+        clock_icon.style.display = "block"
 
 
         let myDB = getFirestore();
@@ -197,43 +208,64 @@ listeningContacts()
         let friendRef = doc(myDB, "users", obj.id_user_request)
 
         try{
-            await runTransaction(myDB, async(transaction)=>{
-                let friendInfo = {
-                    chat_id: "chat_id",
-                    id : obj.id_user_request,
-                    username: obj.request_username,
-                    image: obj.request_image,
-                    missing_messages: 0,
-                    last_messge: `New contact, say hi to ${obj.request_username}`,
-                    date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
+            deleteFriendRequest(obj.id_user_request, obj.accepted, obj.deleted, obj.clock_id)
+            createChat().then(idChat =>{
+                if(idChat && idChat !== null && idChat!== undefined){
+                    runTransaction(myDB, async(transaction)=>{
+                        writeMessage(`You have succesfully added ${obj.request_username} to your contact list`)
+                        let friendInfo = {
+                            chat_id: idChat,
+                            id : obj.id_user_request,
+                            username: obj.request_username,
+                            image: obj.request_image,
+                            missing_messages: 0,
+                            last_messge: `New contact, say hi to ${obj.request_username}`,
+                            date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
+                        }
+                        let myInfo_for_friend = {
+                            chat_id: idChat,
+                            id : userData.id,
+                            username: userData.username,
+                            image: userData.image,
+                            missing_messages: 0,
+                            last_messge: `New contact, say hi to ${userData.username}`,
+                            date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
+                        }
+                        const userSnapshot = await transaction.get(myUserRef);
+                        const friendSnapshot = await transaction.get(friendRef);
+
+                        let myData = userSnapshot.data()
+                        let myFriendData = friendSnapshot.data()
+
+                        myData.contacts.push(friendInfo)
+                        myFriendData.contacts.push(myInfo_for_friend)
+
+                        transaction.update(myUserRef, {contacts: myData.contacts})
+                        transaction.update(friendRef, {contacts: myFriendData.contacts})
+
+                    })
                 }
-                let myInfo_for_friend = {
-                    chat_id: "chat_id",
-                    id : userData.id,
-                    username: userData.username,
-                    image: userData.image,
-                    missing_messages: 0,
-                    last_messge: `New contact, say hi to ${userData.username}`,
-                    date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
-                }
-                const userSnapshot = await transaction.get(myUserRef);
-                const friendSnapshot = await transaction.get(friendRef);
-
-                let myData = userSnapshot.data()
-                let myFriendData = friendSnapshot.data()
-
-                myData.contacts.push(friendInfo)
-                myFriendData.contacts.push(myInfo_for_friend)
-
-                transaction.update(myUserRef, {contacts: myData.contacts})
-                transaction.update(friendRef, {contacts: myFriendData.contacts})
             })
+
         }
         catch(error){
-            console.error("error accepting request:", error)
+            writeMessage("error accepting request:", error)
         }
     }
-//------------------------------------------------listening dunctions 
+
+    async function createChat(){
+        let myDB = getFirestore()
+        let idChat =""
+        let arrayMessages=[]
+        try{
+            const docRef =  await addDoc(collection(myDB,"chats"), {messages: arrayMessages});
+            idChat = docRef.id
+            return idChat;
+        }catch(error){
+            console.error("error creating chat:", error)
+        }
+    }
+//------------------------------------------------listening functions 
      function listeningRequests(){
         if(userData.id && userData.friend_requests){
             let myID = userData.id;
@@ -306,7 +338,7 @@ listeningContacts()
                                     <img className='img-web-search' src={user.image}></img>
                                     <label className='web-username'>{user.username}</label>
                                     {(userData.id !== user.id && !(contactDataID.has(user.id)))?
-                                    <button id={user.id}className='btn-send-request' onClick={()=>(sendRequest(user.id))}>
+                                    <button id={user.id}className='btn-send-request' onClick={()=>(sendRequest(user.id, user.username))}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-add" viewBox="0 0 16 16">
                                             <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
                                             <path d="M8.256 14a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.74.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z"/>
@@ -412,6 +444,7 @@ listeningContacts()
                                             <small className="element-list-username">{contact.username}</small>
                                             <small className="last-message"> {contact.last_messge}</small>
                                             <small className='last-date-contact'>{contact.date_time_message}</small>
+                                            <small className="missing-messages" data-content={contact.missing_messages}>{contact.missing_messages}</small>
                                     </div>
                                 ))
                                 :<div>

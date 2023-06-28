@@ -59,7 +59,7 @@ function App() {
   }
   return (
     <div className="App">
-      {(isLogged)? <Chat db={db} onSesionClose={closeSession} ></Chat> : 
+      {(isLogged)? <Chat db={db} onSesionClose={closeSession} onToast={deployToast}></Chat> : 
         <Login db={db} onLogin={beginSession} onToast={deployToast}></Login>
       }
 
