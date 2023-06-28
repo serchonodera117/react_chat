@@ -122,6 +122,7 @@
     height: 5px;
     margin-top: 6%;
     transition: 0.3s;
+    cursor: pointer;
 }
 .search-new-friend svg{
     transition: 0.3s;
@@ -148,6 +149,7 @@
     border-radius: 15px;
     transition: 0.3s ease-in;
     transform: rotateY(90deg) ;
+    box-shadow: 0px 0px 30px 3px rgba(87, 80, 104, 0.836);
     background-color: var(--modal-color);
 }
 .modal-header{
@@ -186,6 +188,7 @@
     border-radius: 30px;
     margin-right: 5px;
     margin-left: 5px;
+    cursor: pointer;
     transition: 0.3s;
 }
 .btn-search:hover, .btn-search-all:hover{
@@ -302,9 +305,14 @@
     padding-bottom: 1vw;
     padding-left: 1vw;
     padding-right: 1vw;
+    cursor: pointer;
+    transition: 0.3s ease-in;
+  }.element-list-contact:hover{
+    background-color: rgb(58, 53, 53);
+
   }
   .element-list-username, .element-list-request{
-    margin-top: 2vh;
+    margin-top: 1vh;
     margin-bottom: 2vh;
     margin-left: 1vw;
     margin-right: 1vw;
@@ -347,11 +355,24 @@
   }
 
   .last-date-contact{
+    color: rgba(168, 184, 106, 0.884);
     margin-left:auto;
     text-align: right;
     font-size: 10px;
   }
 
+  .last-message{
+    color: rgb(145, 132, 132);
+    text-align: left;
+    position: absolute;
+    margin-left: 5vw;
+    max-width: 17vw;
+    max-height: 5vh;
+    margin-top: 5vh;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+  }
   .backgroud-icon{
     object-fit: cover;
     width: 50%;

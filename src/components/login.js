@@ -1,6 +1,6 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
-import { getFirestore, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { getFirestore, collection, addDoc, query, where, getDocs} from "firebase/firestore";
 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import defaultUserImage from '../images/default_userimg.png'

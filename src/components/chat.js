@@ -19,6 +19,7 @@ function Chat({db, onSesionClose}){
     const [userData, setUserData] = useState("")
     const [searchWebUsers, setSearchWebUsers] = useState("")
     const [webListUsers, setWebListUsers] = useState([])
+    const [contactDataID, setContactDataID] = useState([])
 
 //---------------------------------------------Listening
 listeningRequests()
@@ -39,8 +40,13 @@ listeningContacts()
             let querySnapshot = await getDoc(myDoc) 
             if(querySnapshot.exists()){
                 const data = querySnapshot.data()
+                let arrayid= new Map()
                 data.id = querySnapshot.id
                 setUserData(data)
+                data.contacts.forEach((item)=>{
+                    arrayid.set(item.id,item.username)
+                })
+                setContactDataID(arrayid)
             }
 
         }   catch(error){
@@ -100,7 +106,6 @@ listeningContacts()
         let myDB = getFirestore()
         const userCollections = collection(myDB,"users");
         const myQuery = query(userCollections)
-        console.log(webListUsers)
         try{
             let QuerySnapshot = await getDocs(myQuery)
             let users = []
@@ -116,7 +121,6 @@ listeningContacts()
                         }
                         users.push(obj);
                   })
-                  console.log(users);
                   setWebListUsers(users)
         }catch(error){
             setWebListUsers([])
@@ -200,28 +204,29 @@ listeningContacts()
                     username: obj.request_username,
                     image: obj.request_image,
                     missing_messages: 0,
-                    last_messge: "",
-                    date_time_message: ""
+                    last_messge: `New contact, say hi to ${obj.request_username}`,
+                    date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
                 }
-                const userSnapshot = await transaction.get(myUserRef);
-                let myData = userSnapshot.data()
-                myData.contacts.push(friendInfo)
-                transaction.update(myUserRef, {contacts: myData.contacts})
-            })
-            await runTransaction(myDB, async(transaction)=>{
                 let myInfo_for_friend = {
                     chat_id: "chat_id",
                     id : userData.id,
                     username: userData.username,
                     image: userData.image,
                     missing_messages: 0,
-                    last_messge: "",
-                    date_time_message: ""
+                    last_messge: `New contact, say hi to ${userData.username}`,
+                    date_time_message: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString()
                 }
-                const userSnapshot = await transaction.get(friendRef);
+                const userSnapshot = await transaction.get(myUserRef);
+                const friendSnapshot = await transaction.get(friendRef);
+
                 let myData = userSnapshot.data()
-                myData.contacts.push(myInfo_for_friend)
-                transaction.update(friendRef, {contacts: myData.contacts})
+                let myFriendData = friendSnapshot.data()
+
+                myData.contacts.push(friendInfo)
+                myFriendData.contacts.push(myInfo_for_friend)
+
+                transaction.update(myUserRef, {contacts: myData.contacts})
+                transaction.update(friendRef, {contacts: myFriendData.contacts})
             })
         }
         catch(error){
@@ -256,6 +261,12 @@ listeningContacts()
             const unsuscribe = onSnapshot(myCollection, (snapshot) =>{
                 const theuserData = snapshot.data()
                 let contacts = theuserData.contacts;
+                let arrayid= new Map()
+
+                contacts.forEach(contact =>{
+                    arrayid.set(contact.id, contact.username)
+                })
+                setContactDataID(arrayid)
                 setUserData(obj=>({...obj, contacts: contacts}))
 
             })
@@ -294,7 +305,7 @@ listeningContacts()
                                 <div className='web-card-body' key={index}>
                                     <img className='img-web-search' src={user.image}></img>
                                     <label className='web-username'>{user.username}</label>
-                                    {(userData.id !== user.id) ?
+                                    {(userData.id !== user.id && !(contactDataID.has(user.id)))?
                                     <button id={user.id}className='btn-send-request' onClick={()=>(sendRequest(user.id))}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-add" viewBox="0 0 16 16">
                                             <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
@@ -397,9 +408,10 @@ listeningContacts()
                             (userData.contacts && userData.contacts.length > 0)?
                                 userData.contacts.map((contact, index)=>(
                                     <div className="element-list-contact"  key={index}>
-                                        <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
-                                        <small className="element-list-username">{contact.username}</small>
-                                        <small className='last-date-contact'>{contact.date_time_message}</small>
+                                            <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
+                                            <small className="element-list-username">{contact.username}</small>
+                                            <small className="last-message"> {contact.last_messge}</small>
+                                            <small className='last-date-contact'>{contact.date_time_message}</small>
                                     </div>
                                 ))
                                 :<div>
