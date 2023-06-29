@@ -2,6 +2,8 @@ import React from 'react';
 import {useState, useEffect} from 'react';
 import '../styles/main.css';
 import '../styles/chat.css';
+import ChatMessageComponent from '../components/chat_messages';
+
 
 import defaultImage from '../images/default_userimg.png'
 import firebase from 'firebase/app';
@@ -20,6 +22,7 @@ function Chat({db, onSesionClose, onToast}){
     const [searchWebUsers, setSearchWebUsers] = useState("")
     const [webListUsers, setWebListUsers] = useState([])
     const [contactDataID, setContactDataID] = useState([])
+    const [chatMessageData, setChatMessageData] = useState("")
 
 //---------------------------------------------Listening
 listeningRequests()
@@ -265,6 +268,10 @@ listeningContacts()
             console.error("error creating chat:", error)
         }
     }
+    function setChatComponent(contactObj){
+        setChatMessageData(contactObj)
+    }
+ 
 //------------------------------------------------listening functions 
      function listeningRequests(){
         if(userData.id && userData.friend_requests){
@@ -439,7 +446,7 @@ listeningContacts()
                         {
                             (userData.contacts && userData.contacts.length > 0)?
                                 userData.contacts.map((contact, index)=>(
-                                    <div className="element-list-contact"  key={index}>
+                                    <div className="element-list-contact" onClick={()=>(setChatComponent(contact))}  key={index}>
                                             <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
                                             <small className="element-list-username">{contact.username}</small>
                                             <small className="last-message"> {contact.last_messge}</small>
@@ -456,7 +463,18 @@ listeningContacts()
                     </div>
                 </div>
                 <div className='chat'>
-                    chat
+                    {
+                        (userData.contacts && chatMessageData.id)?
+                          userData.contacts.map((contact, index)=>(
+                            <div key={index}>{
+                            (contact.id == chatMessageData.id)?
+                              <ChatMessageComponent  className='chat-messages-component' dataContact={chatMessageData}></ChatMessageComponent>
+                              :<div></div>
+                              }
+                            </div>
+                          ))
+                        :<div></div>
+                    }
                 </div>
             </div>
         </div>
