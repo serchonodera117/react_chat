@@ -2,7 +2,10 @@
     --header-bg: rgb(39, 39, 39);
     --input-color: rgba(17, 16, 16, 0.979);
     --placeholder-color: rgba(70, 58, 58, 0.979);
-    --bg-color:rgba(14, 11, 11, 0.979)
+    --bg-color:rgba(14, 11, 11, 0.979);
+    --color-my-message: rgba(68, 52, 68, 0.979);
+    --color-contact-message: rgba(53, 46, 47, 0.979);
+    --date-color: rgb(158, 156, 156);
 }
 *{
     margin: 0;
@@ -38,6 +41,9 @@
 }
 .chat-body{
     height: 71vh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 .chat-foter-text{
     background-color: var(--header-bg);
@@ -84,6 +90,72 @@
 }.send-message:hover .bi{
     transform: rotate(45deg) !important;
     scale: 1.2;
+}
+
+.message-container{
+    content: "";
+    margin-top: 2vw;
+    margin-bottom: 2vw;
+    margin-right: 5vw;
+    margin-left: 5vw;
+}
+.message-body-me{
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 5px;
+    display: table;
+    margin-left: auto;
+    background-color:var(--color-my-message);
+    text-align: left;
+    border-end-end-radius: 15px;
+    border-top-left-radius: 15px;
+    border-end-start-radius: 15px;
+}.message-body-me::before{
+    content: "";
+    width: 1px;
+    height: 1px;
+    margin-top: -15px;
+    margin-right: -30px;
+    border-right: 1.5rem solid rgba(255, 255, 255, 0);
+    border-top: 1rem solid var(--color-my-message);
+    float: right;
+}
+.message-body-contact{
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 5px;
+    display: table;
+    margin-right: auto;
+    background-color:var(--color-contact-message);
+    text-align: left;
+    border-end-end-radius: 15px;
+    border-top-right-radius: 15px;
+    border-end-start-radius: 15px;
+}.message-body-contact::before{
+    content: "";
+    width: 1px;
+    height: 1px;
+    margin-top: -15px;
+    margin-left: -30px;
+    border-left: 1.5rem solid rgba(255, 255, 255, 0);
+    border-top: 1rem solid var(--color-contact-message);
+    float: left;
+}
+
+
+.message-text{
+    display: block;
+    max-width: 25vw;
+    word-wrap: break-word;
+}
+
+.date-message {
+    text-align: left;
+    margin-bottom: 1vh;
+    font-size: 10px;
+    color: var(--date-color);
 }
 .box-send-content:has(.display-button:checked){
     .send-message{

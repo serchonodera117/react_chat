@@ -58,6 +58,7 @@ listeningContacts()
     }
     function closeSession(){
         localStorage.removeItem('user')
+        setUserData("")
         onSesionClose()
     }
     function writeMessage(message){
@@ -280,7 +281,7 @@ listeningContacts()
             let myCollection = doc(myDB, "users", myID);
             let myQuery = query(myCollection)
 
-            const unsuscribe = onSnapshot(myCollection,(snapshot)=>{
+            const unsuscribe = onSnapshot(myCollection,{ includeMetadataChanges: true },(snapshot)=>{
                 if(userData.friend_requests){
                         const theuserData = snapshot.data()
                         let friend_requests = theuserData.friend_requests;
@@ -297,7 +298,7 @@ listeningContacts()
             let myCollection = doc(myDB, "users", myID);
             let myQuery = query(myCollection);
 
-            const unsuscribe = onSnapshot(myCollection, (snapshot) =>{
+            const unsuscribe = onSnapshot(myCollection, { includeMetadataChanges: true } ,(snapshot) =>{
                 const theuserData = snapshot.data()
                 let contacts = theuserData.contacts;
                 let arrayid= new Map()
@@ -468,7 +469,7 @@ listeningContacts()
                           userData.contacts.map((contact, index)=>(
                             <div key={index}>{
                             (contact.id == chatMessageData.id)?
-                              <ChatMessageComponent  className='chat-messages-component' dataContact={chatMessageData}></ChatMessageComponent>
+                              <ChatMessageComponent  className='chat-messages-component' dataContact={chatMessageData}  myIdUser={userData.id}></ChatMessageComponent>
                               :<div></div>
                               }
                             </div>
