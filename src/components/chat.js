@@ -285,7 +285,7 @@ listeningContacts()
                 if(userData.friend_requests){
                         const theuserData = snapshot.data()
                         let friend_requests = theuserData.friend_requests;
-                        setUserData(obj=>({...obj, friend_requests:friend_requests}))
+                        setUserData(obj => ({...obj, friend_requests:friend_requests}))
                     }
             })
             return unsuscribe;
@@ -307,7 +307,7 @@ listeningContacts()
                     arrayid.set(contact.id, contact.username)
                 })
                 setContactDataID(arrayid)
-                setUserData(obj=>({...obj, contacts: contacts}))
+                setUserData(obj =>({...obj, contacts: contacts}))
 
             })
             return unsuscribe;
