@@ -6,7 +6,7 @@ import {useState, useEffect} from 'react';
 import { getFirestore, collection, addDoc, query, where, limit,
     getDocs,getDoc , doc, runTransaction, onSnapshot} from "firebase/firestore";
 
-function ChatMessageComponent({dataContact, myIdUser}){
+function ChatMessageComponent({dataContact, myIdUser, onClearMissingMessages}){
     const [message, setMessage] = useState("")
     const [contactData, setContactData] = useState("")
     const [chatMessages, setChatMessages] = useState([])
@@ -32,6 +32,7 @@ function ChatMessageComponent({dataContact, myIdUser}){
             getMessages(dataContact.chat_id)
             setContactData(objContact)
             setMyID(myIdUser)
+            onClearMissingMessages(dataContact.id)
         }
         setBottomScroll()
     },[])
@@ -75,6 +76,7 @@ function ChatMessageComponent({dataContact, myIdUser}){
         let idChat = chatID;
         let myDB = getFirestore()
         let docRef = doc(myDB, "chats", idChat);
+        let contactRef = doc(myDB, "users", contactData.id)
 
         let checkBtn = document.getElementById("display-send-button")
         let buildedMessage = buildMessage()
@@ -83,9 +85,19 @@ function ChatMessageComponent({dataContact, myIdUser}){
         try{
             runTransaction(myDB, async(transaction)=>{
                 let messageData = await transaction.get(docRef);
+                let contact = await transaction.get(contactRef);
+
                 let data = messageData.data();
                 data.messages.push(buildedMessage);
                 transaction.update(docRef,{messages: data.messages})
+                
+                let thedataContact = contact.data()
+                let index = thedataContact.contacts.findIndex(item => item.id == myID)
+                thedataContact.contacts[index].missing_messages+=1
+                thedataContact.contacts[index].last_messge = buildedMessage.message_text 
+                thedataContact.contacts[index].date_time_message = buildedMessage.message_date
+                
+                transaction.update(contactRef, {contacts: thedataContact.contacts})
             })
         }catch(error){
             console.log("Error sending message : ",error);

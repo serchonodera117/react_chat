@@ -23,6 +23,8 @@ function Chat({db, onSesionClose, onToast}){
     const [webListUsers, setWebListUsers] = useState([])
     const [contactDataID, setContactDataID] = useState([])
     const [chatMessageData, setChatMessageData] = useState("")
+    const [searchingLocalUsers, setSearchingLocalUsers] = useState(false)
+    const [localContactsArray, setLocalContactsArray] = useState([])
 
 //---------------------------------------------Listening
 listeningRequests()
@@ -36,6 +38,8 @@ listeningContacts()
           getUserData(localUserData.id)
         }
     },[]);
+
+
    async function getUserData(id){
         let myDB = getFirestore();
         let myDoc = doc(myDB, "users", id)
@@ -45,10 +49,13 @@ listeningContacts()
                 const data = querySnapshot.data()
                 let arrayid= new Map()
                 data.id = querySnapshot.id
-                setUserData(data)
+                let sortedContacts = sortContactsByLastMessage(data.contacts)
+                data.contacts = sortedContacts
+                data.contacts = sortedContacts
                 data.contacts.forEach((item)=>{
                     arrayid.set(item.id,item.username)
                 })
+                setUserData(data)
                 setContactDataID(arrayid)
             }
 
@@ -74,6 +81,23 @@ listeningContacts()
         }
         else{
             clearSearch()
+        }
+    }
+    function writeLocalSearch(e){
+        let textSearch = e.target.value.toLowerCase();
+        let finded=[]
+        if(textSearch.trim()){
+            setSearchingLocalUsers(true)
+            userData.contacts.map((item) =>{
+               let name = item.username.toLowerCase()
+               if(name.match(textSearch)){
+                finded.push(item)
+               }
+            })
+            setLocalContactsArray(finded)
+        }else{
+            setLocalContactsArray([])
+            setSearchingLocalUsers(false)
         }
     }
    async function searchNewUsers(){
@@ -272,7 +296,37 @@ listeningContacts()
     function setChatComponent(contactObj){
         setChatMessageData(contactObj)
     }
- 
+
+    function clearMissingMessages(id_contact){
+        let myDB = getFirestore()
+        let myId = userData.id
+        let docRef = doc(myDB,"users", myId)
+
+        try{
+            runTransaction(myDB, async(transaction) => {
+                let myData = await transaction.get(docRef);
+                let  data = myData.data()
+                let index = data.contacts.findIndex(item=> item.id == id_contact)
+                data.contacts[index].missing_messages = 0
+
+                transaction.update(docRef, {contacts: data.contacts})
+            })
+        }catch(error){
+            console.error("error setting chat:", error)
+        }
+    }
+
+    function sortContactsByLastMessage(arrayContacts){
+       let sorted = arrayContacts.sort((item, nextItem) => {
+            let prevContact = new Date(item.date_time_message)
+            let nextContact = new Date(nextItem.date_time_message)
+
+            if(prevContact > nextContact) return -1;
+            else if (prevContact < nextContact) return 1;
+            else return 0;
+        })
+        return sorted;
+    }
 //------------------------------------------------listening functions 
      function listeningRequests(){
         if(userData.id && userData.friend_requests){
@@ -303,6 +357,7 @@ listeningContacts()
                 let contacts = theuserData.contacts;
                 let arrayid= new Map()
 
+               if(contacts){sortContactsByLastMessage(contacts)}
                 contacts.forEach(contact =>{
                     arrayid.set(contact.id, contact.username)
                 })
@@ -363,7 +418,7 @@ listeningContacts()
                 <div className='contacts'>
                     <div className="head-contacts">
                         <img className='user-img'  src={userData.image}alt={userData.username + " "+ " profile image"}></img>
-                        <input type="search" className="search-contact" placeholder='Search contacts. . .'></input>
+                        <input type="search" className="search-contact" onChange={writeLocalSearch} placeholder='Search contacts. . .'></input>
                         <i className='icon-search'>
                         <svg  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-search" viewBox="0 0 16 16">
                             <path  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -445,7 +500,7 @@ listeningContacts()
                         <br></br>
                         <hr></hr>
                         {
-                            (userData.contacts && userData.contacts.length > 0)?
+                            ((userData.contacts && userData.contacts.length > 0) && !searchingLocalUsers)?
                                 userData.contacts.map((contact, index)=>(
                                     <div className="element-list-contact" onClick={()=>(setChatComponent(contact))}  key={index}>
                                             <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
@@ -455,7 +510,19 @@ listeningContacts()
                                             <small className="missing-messages" data-content={contact.missing_messages}>{contact.missing_messages}</small>
                                     </div>
                                 ))
-                                :<div>
+                                :
+                                (searchingLocalUsers)?
+                                localContactsArray.map((contact, index)=>(
+                                    <div className="element-list-contact" onClick={()=>(setChatComponent(contact))}  key={index}>
+                                            <img className='img-contact-list' src={contact.image} alt={contact.userame +"img"}></img>
+                                            <small className="element-list-username">{contact.username}</small>
+                                            <small className="last-message"> {contact.last_messge}</small>
+                                            <small className='last-date-contact'>{contact.date_time_message}</small>
+                                            <small className="missing-messages" data-content={contact.missing_messages}>{contact.missing_messages}</small>
+                                    </div>
+                                ))
+                                :
+                                <div>
                                     <img className='backgroud-icon' src={bgIcon} ></img>
                                     <br></br>
                                     <p className='bg-message'>You dont have contacts</p>
@@ -469,7 +536,7 @@ listeningContacts()
                           userData.contacts.map((contact, index)=>(
                             <div key={index}>{
                             (contact.id == chatMessageData.id)?
-                              <ChatMessageComponent  className='chat-messages-component' dataContact={chatMessageData}  myIdUser={userData.id}></ChatMessageComponent>
+                              <ChatMessageComponent  className='chat-messages-component' dataContact={chatMessageData}  myIdUser={userData.id} onClearMissingMessages={clearMissingMessages}></ChatMessageComponent>
                               :<div></div>
                               }
                             </div>
