@@ -185,3 +185,25 @@
     }
  
 }
+
+/*Media screeen for mobile devices*/
+
+/*Tablet*/
+@media only screen and (max-width: 810px){
+    .cards-container{
+        width: 60vw;
+    }
+    .floating-btn{
+        right: 15vw;
+    }
+}
+
+/*Mobile*/
+@media only screen and (max-width: 510px){
+    .cards-container{
+        width: 80vw;
+    }
+    .floating-btn{
+        right: 5vw;
+    }
+}

@@ -14,7 +14,6 @@
 
 .chat-message-container{
     display: block;
-    /* background-color: red;`` */
     width: 62vw;
     height: 90vh;
     margin-top: 0vh;
@@ -76,8 +75,8 @@
     margin-left: 15px;
     position: relative;
     z-index: -1;
-    height: 7vh;
-    width: 3vw;
+    height: 40px;
+    width: 40px;
     transition: 0.3s ease-in-out;
     opacity: 0;
     transform: rotateY(90deg) rotate(45deg);
@@ -168,5 +167,11 @@
     }
     .send-message svg{
     transform: rotate(0deg);
+    }
+}
+
+@media only screen and (max-width: 650px){
+    .chat-message-container{
+        width: 90vw;
     }
 }

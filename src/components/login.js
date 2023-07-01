@@ -48,14 +48,23 @@ function Login({db, onToast, onLogin}) {
     async function registerUser(e){
         let db = getFirestore()
         e.preventDefault();
+        let userCollection = collection(db, "users");
+        let usernameQuery = query(userCollection, where('username', '==', addUserData.username))
+
         try {
-            const docRef =  await addDoc(collection(db,"users"), addUserData);
-            let checkbox = document.getElementById("input-checkbox-changelogin")
-            checkbox.checked = false;
-            
-            activateToast(`${addUserData.username} se ha registrado con éxito`)
-            setUserData({username:'', password:'', image:defaultUserImage, contacts:[], friend_requests:[]})
-            
+            const snapshot = await getDocs(usernameQuery)
+            if(snapshot.size > 0){
+                activateToast(`${addUserData.username} is already in use`)
+            }
+            else
+            {
+                const docRef =  await addDoc(collection(db,"users"), addUserData);
+                let checkbox = document.getElementById("input-checkbox-changelogin")
+                checkbox.checked = false;
+                
+                activateToast(`${addUserData.username} has been successfully added`)
+                setUserData({username:'', password:'', image:defaultUserImage, contacts:[], friend_requests:[]})
+            }
         }catch(error){
             activateToast("Error al insertar usuario : ", error)
         }
@@ -86,12 +95,12 @@ function Login({db, onToast, onLogin}) {
             localStorage.setItem("user", JSON.stringify(userData));
             if(userData!=null){
                 onLogin()
-                activateToast(`${userData.username} Bienvenido :3`)
+                activateToast(`${userData.username} Wellcome :3`)
             }else{
-                activateToast("Usuario o contraseña invalidos U ,u")
+                activateToast("Invalid username or password U ,u")
             }
         } catch (error) {
-            activateToast("Error al insertar usuario : ", error)
+            activateToast("Error adding user : ", error)
         }
     }
     return(

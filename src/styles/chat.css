@@ -24,6 +24,46 @@
     margin-top: 15px;
     left: 15px;
 }
+.btn-change-chat{
+  position:absolute;
+  display: none;
+  width: 27px;
+  height: 27px;
+  z-index: 1;
+  left: 15px;
+  margin-top: 60px;
+  border: 2px  outset rgb(202, 185, 185);
+  border-radius: 15px;
+  transition: 0.3s ease-in-out;
+  background-color: rgb(133, 87, 141);
+  box-shadow: 0px 0px 3px 1px rgb(139, 197, 144);
+}
+.btn-change-chat:hover{
+  background-color: rgb(105, 73, 110);
+}
+.btn-change-chat svg{
+  margin-top: 3px;
+  color: white !important;
+  width: 20px;
+  height: 20px;
+}
+.opened{margin-left: 3px; display: table;}
+.closed{display: none;}
+.chat-component:has(#change-chat:checked){
+    .btn-change-chat{
+      background-color: rgb(63, 46, 66);
+      box-shadow: 0px 0px 0px 0px rgb(139, 197, 144, 0);
+  }
+  .opened{margin-left: 3px; display: none;}
+  .closed{display: table;}
+
+  .contacts{
+    opacity: 0;
+    z-index: -1;
+    margin-left: -40px;
+    height: 20vh;
+  }
+}
 .btn-close-session:hover{
     width: 150px;
     background-color: rgba(43, 40, 40, 0.979);
@@ -69,6 +109,7 @@
     border-radius: 15px;
     overflow: hidden;
     margin-right: 10px;
+    transition: 0.3s ease-in-out;
 }
 
 .chat{
@@ -410,3 +451,54 @@
     color: var(--bg-message-color);
     font-size: 18px;
   }
+
+  /*--------------------------------Device resolutions*/
+  /* Tablets */
+  @media only screen and (max-width: 650px){
+    .btn-close-session, .btn-change-chat{
+      z-index: 10;
+    }
+    .btn-change-chat{
+      display: block;
+    }
+    .contacts{
+      position: absolute;
+      z-index: 1;
+      height: 90vh;
+      width: 65vw;
+      background-color: rgba(14, 17, 14, 0.623);
+      backdrop-filter: blur(5px);
+      box-shadow: 0px 0px 7px 2px rgba(143, 54, 161, 0.884);
+    }
+    .head-contacts{
+      height: 10vh;
+    }
+    .chat{
+      width: 100%;
+    }
+    .chat-message-box{
+      width: 100%;
+    }
+    .modal-container{
+      width: 80vw;
+      margin-left: -15vw
+    }
+  }
+
+  /* mobile */
+  @media only screen and (max-width: 410px){
+    .contacts{
+      position: absolute;
+      height: 90vh;
+      width: 85vw;
+      margin-left: 5vw;
+      margin-right: 5vw;
+      background-color: rgba(14, 17, 14, 0.623);
+      backdrop-filter: blur(5px);
+      box-shadow: 0px 0px 7px 2px rgba(143, 54, 161, 0.884);
+    }
+    .chat{
+      width: 100%;
+    }
+  }
+  
