@@ -558,7 +558,13 @@ listeningContacts()
                               }
                             </div>
                           ))
-                        :<div></div>
+                        :<div>
+                            <img className='backgroud-icon' src={bgIcon} ></img>
+                            <br></br>
+                            <p className='bg-message'>
+                             Chat designed and developed by Sergio Garcia Michel. ©2023. All rights reserved.
+                            </p>
+                        </div>
                     }
                 </div>
             </div>
