@@ -474,7 +474,11 @@
       height: 10vh;
     }
     .chat{
-      width: 100%;
+        width: 100%;
+        height: 95vh;
+    }
+    .chat-body{
+      height: 75vh !important;
     }
     .chat-message-box{
       width: 100%;
@@ -499,6 +503,7 @@
     }
     .chat{
       width: 100%;
+      height: 95vh;
     }
   }
   
