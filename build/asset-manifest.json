@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/react_chat/build/static/css/main.0a1697cb.css",
+    "main.css": "/react_chat/build/static/css/main.1580f2b5.css",
     "main.js": "/react_chat/build/static/js/main.f99bb135.js",
     "static/js/787.d4ba6e7d.chunk.js": "/react_chat/build/static/js/787.d4ba6e7d.chunk.js",
     "static/media/clock.gif": "/react_chat/build/static/media/clock.70b06c9f51f8e737021b.gif",
@@ -8,12 +8,12 @@
     "static/media/default_userimg.png": "/react_chat/build/static/media/default_userimg.a6143582309785dca610.png",
     "static/media/logo.svg": "/react_chat/build/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/react_chat/build/index.html",
-    "main.0a1697cb.css.map": "/react_chat/build/static/css/main.0a1697cb.css.map",
+    "main.1580f2b5.css.map": "/react_chat/build/static/css/main.1580f2b5.css.map",
     "main.f99bb135.js.map": "/react_chat/build/static/js/main.f99bb135.js.map",
     "787.d4ba6e7d.chunk.js.map": "/react_chat/build/static/js/787.d4ba6e7d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.0a1697cb.css",
+    "static/css/main.1580f2b5.css",
     "static/js/main.f99bb135.js"
   ]
 }
